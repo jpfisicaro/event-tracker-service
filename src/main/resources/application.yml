@@ -10,4 +10,4 @@ spring:
 
 logging:
   level:
-    com.theanimalmap: INFO
+    com.theanimalmap: DEBUG

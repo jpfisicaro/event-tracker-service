@@ -4,6 +4,7 @@ import com.theanimalmap.eventtracker.service.EventProducer;
 import com.theanimalmap.eventtracker.validation.EventValidator;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
@@ -15,6 +16,7 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+@AutoConfigureMockMvc(addFilters = false)
 @WebMvcTest(EventController.class)
 @Import(ApiExceptionHandler.class) // para que se apliquen los 400 custom
 class EventControllerTest {
@@ -30,7 +32,6 @@ class EventControllerTest {
 
     @Test
     void postEvent_validEvent_shouldReturn202_andPublish() throws Exception {
-        // validator.validate(...) no hace nada (OK)
         String body = """
                 {"type":"search_animal","payload":{"animal":"lion"}}
                 """;
