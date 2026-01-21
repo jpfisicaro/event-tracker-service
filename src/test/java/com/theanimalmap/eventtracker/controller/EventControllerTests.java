@@ -1,5 +1,6 @@
 package com.theanimalmap.eventtracker.controller;
 
+import com.theanimalmap.eventtracker.config.ApiKeyAuthFilter;
 import com.theanimalmap.eventtracker.service.EventProducer;
 import com.theanimalmap.eventtracker.validation.EventValidator;
 import org.junit.jupiter.api.Test;
@@ -10,13 +11,12 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@AutoConfigureMockMvc(addFilters = false)
+@AutoConfigureMockMvc(addFilters = false) // 🔑 apagamos security acá: este test es de controller
 @WebMvcTest(EventController.class)
 @Import(ApiExceptionHandler.class) // para que se apliquen los 400 custom
 class EventControllerTest {
@@ -30,6 +30,9 @@ class EventControllerTest {
     @MockitoBean
     private EventValidator validator;
 
+    @MockitoBean
+    private ApiKeyAuthFilter apiKeyAuthFilter;
+
     @Test
     void postEvent_validEvent_shouldReturn202_andPublish() throws Exception {
         String body = """
@@ -42,7 +45,8 @@ class EventControllerTest {
                 .andExpect(status().isAccepted());
 
         verify(validator).validate(eq("search_animal"), any());
-        verify(producer).publish(eq("interactions"), any(String.class));
+        verify(producer).publish(eq("interactions"), anyString());
+        verifyNoMoreInteractions(producer, validator);
     }
 
     @Test
@@ -61,7 +65,9 @@ class EventControllerTest {
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.error").value("unknown type: whatever"));
 
+        verify(validator).validate(eq("whatever"), any());
         verify(producer, never()).publish(anyString(), anyString());
+        verifyNoMoreInteractions(producer, validator);
     }
 
     @Test
@@ -77,9 +83,12 @@ class EventControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isBadRequest())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.error").value("missing field: animal"));
 
+        verify(validator).validate(eq("search_animal"), any());
         verify(producer, never()).publish(anyString(), anyString());
+        verifyNoMoreInteractions(producer, validator);
     }
 
     @Test
@@ -93,13 +102,15 @@ class EventControllerTest {
                         .content(body))
                 .andExpect(status().isBadRequest());
 
-        verify(producer, never()).publish(anyString(), anyString());
+        // No llega al controller (falla el parsing/binding antes)
+        verifyNoInteractions(validator);
+        verifyNoInteractions(producer);
     }
 
     @Test
     void postEvent_missingType_shouldReturn400_andNotPublish() throws Exception {
         // Si tenés @Valid en el controller + starter validation/provider,
-        // esto debería dar 400 por Bean Validation.
+        // esto debería dar 400 por Bean Validation (o tu handler).
         String body = """
                 {"payload":{"animal":"lion"}}
                 """;
@@ -109,6 +120,9 @@ class EventControllerTest {
                         .content(body))
                 .andExpect(status().isBadRequest());
 
+        // Puede o no llegar a tu validator dependiendo de cómo validás el DTO.
+        // La regla fuerte acá es: NO publicar.
         verify(producer, never()).publish(anyString(), anyString());
+        verifyNoMoreInteractions(producer);
     }
 }

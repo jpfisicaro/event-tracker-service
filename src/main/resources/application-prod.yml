@@ -1,0 +1,3 @@
+tam:
+  security:
+    api-key: ${TAM_API_KEY}
