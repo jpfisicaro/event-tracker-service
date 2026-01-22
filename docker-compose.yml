@@ -28,8 +28,8 @@ services:
       - "5432:5432"
     environment:
       POSTGRES_DB: analyticsdb
-      POSTGRES_USER: jpfisicaro
-      POSTGRES_PASSWORD: pistola123
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - pgdata:/var/lib/postgresql/data
 

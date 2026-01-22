@@ -1,3 +1,7 @@
 tam:
   security:
     api-key: ${TAM_API_KEY}
+
+logging:
+  level:
+    com.theanimalmap: INFO

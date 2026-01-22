@@ -1,5 +1,6 @@
 server:
   port: 8081
+  max-http-request-header-size: 16KB
 
 spring:
   kafka:
@@ -7,6 +8,11 @@ spring:
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+  servlet:
+    multipart:
+      max-request-size: 16KB
+      max-file-size: 16KB
 
 logging:
   level:
