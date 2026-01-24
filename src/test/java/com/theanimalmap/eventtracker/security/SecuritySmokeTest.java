@@ -1,11 +1,13 @@
 package com.theanimalmap.eventtracker.security;
 
+import com.theanimalmap.eventtracker.service.EventProducer;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -18,6 +20,9 @@ class SecuritySmokeTest {
 
     @Autowired
     MockMvc mockMvc;
+
+    @MockitoBean
+    EventProducer eventProducer;
 
     @Test
     void postEvents_withApiKey_isAllowed() throws Exception {

@@ -45,7 +45,7 @@ class EventControllerTest {
                 .andExpect(status().isAccepted());
 
         verify(validator).validate(eq("search_animal"), any());
-        verify(producer).publish(eq("interactions"), anyString());
+        verify(producer).publish(eq("tam-events"), anyString());
         verifyNoMoreInteractions(producer, validator);
     }
 

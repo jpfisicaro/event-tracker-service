@@ -18,13 +18,13 @@ class EventProducerTest {
         @SuppressWarnings("unchecked")
         CompletableFuture<SendResult<String, String>> future = CompletableFuture.completedFuture(null);
 
-        when(kafkaTemplate.send("interactions", "{\"x\":1}")).thenReturn(future);
+        when(kafkaTemplate.send("tam-events", "{\"x\":1}")).thenReturn(future);
 
         EventProducer producer = new EventProducer(kafkaTemplate);
 
-        producer.publish("interactions", "{\"x\":1}");
+        producer.publish("tam-events", "{\"x\":1}");
 
-        verify(kafkaTemplate).send("interactions", "{\"x\":1}");
+        verify(kafkaTemplate).send("tam-events", "{\"x\":1}");
         verifyNoMoreInteractions(kafkaTemplate);
     }
 }

@@ -34,7 +34,7 @@ public class EventController {
 
         try {
             String eventJson = objectMapper.writeValueAsString(req);
-            producer.publish("interactions", eventJson);
+            producer.publish("tam-events", eventJson);
         } catch (JsonProcessingException e) {
             // Should never happen for a simple DTO, but fail fast if it does
             throw new IllegalStateException("Failed to serialize event request", e);

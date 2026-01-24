@@ -1,6 +1,19 @@
 tam:
   security:
     api-key: ${TAM_API_KEY}
+  kafka:
+    topic: tam-events
+
+spring:
+  config:
+    import: optional:file:.env[.properties]
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+    properties:
+      security.protocol: SASL_SSL
+      sasl.mechanism: PLAIN
+      ssl.endpoint.identification.algorithm: https
+      sasl.jaas.config: org.apache.kafka.common.security.plain.PlainLoginModule required username="${KAFKA_API_KEY}" password="${KAFKA_API_SECRET}";
 
 logging:
   level:
