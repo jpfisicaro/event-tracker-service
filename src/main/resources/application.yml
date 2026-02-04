@@ -5,6 +5,8 @@ server:
 spring:
   kafka:
     bootstrap-servers: localhost:9092
+    admin:
+      enabled: true
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
@@ -17,3 +19,12 @@ spring:
 logging:
   level:
     com.theanimalmap: DEBUG
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: always

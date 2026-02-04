@@ -18,3 +18,15 @@ spring:
 logging:
   level:
     com.theanimalmap: INFO
+
+management:
+  info:
+    build:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
