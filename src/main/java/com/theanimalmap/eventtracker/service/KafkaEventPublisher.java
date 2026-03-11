@@ -9,13 +9,13 @@ import org.springframework.stereotype.Service;
 import java.util.concurrent.CompletableFuture;
 
 @Service
-public class EventProducer {
+public class KafkaEventPublisher implements EventPublisher {
 
-    private static final Logger log = LoggerFactory.getLogger(EventProducer.class);
+    private static final Logger log = LoggerFactory.getLogger(KafkaEventPublisher.class);
 
     private final KafkaTemplate<String, String> kafkaTemplate;
 
-    public EventProducer(KafkaTemplate<String, String> kafkaTemplate) {
+    public KafkaEventPublisher(KafkaTemplate<String, String> kafkaTemplate) {
         this.kafkaTemplate = kafkaTemplate;
     }
 

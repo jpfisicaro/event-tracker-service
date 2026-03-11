@@ -1,3 +1,5 @@
 tam:
   security:
     api-key: dev-secret
+  kafka:
+    topic: tam-events

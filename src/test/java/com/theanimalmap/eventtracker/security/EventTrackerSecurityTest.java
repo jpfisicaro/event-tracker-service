@@ -1,6 +1,6 @@
 package com.theanimalmap.eventtracker.security;
 
-import com.theanimalmap.eventtracker.service.EventProducer;
+import com.theanimalmap.eventtracker.service.KafkaEventPublisher;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -24,7 +24,7 @@ class EventTrackerSecurityTest {
     MockMvc mockMvc;
 
     @MockitoBean
-    EventProducer eventProducer;
+    KafkaEventPublisher eventProducer;
 
     @Test
     void postEvents_withoutApiKey_isUnauthorized() throws Exception {

@@ -4,11 +4,13 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.util.concurrent.CompletableFuture;
 
 import static org.mockito.Mockito.*;
 
+@ActiveProfiles("test")
 class EventProducerTest {
 
     @Test
@@ -20,7 +22,7 @@ class EventProducerTest {
 
         when(kafkaTemplate.send("tam-events", "{\"x\":1}")).thenReturn(future);
 
-        EventProducer producer = new EventProducer(kafkaTemplate);
+        KafkaEventPublisher producer = new KafkaEventPublisher(kafkaTemplate);
 
         producer.publish("tam-events", "{\"x\":1}");
 

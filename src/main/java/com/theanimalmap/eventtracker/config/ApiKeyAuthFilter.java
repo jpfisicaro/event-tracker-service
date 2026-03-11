@@ -4,6 +4,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -18,34 +19,44 @@ import java.util.List;
 public class ApiKeyAuthFilter extends OncePerRequestFilter {
 
     private static final String HEADER = "X-API-KEY";
-    private final EventTrackerSecurityProperties props;
 
-    public ApiKeyAuthFilter(EventTrackerSecurityProperties props) {
-        this.props = props;
-    }
+    @Value("${tam.security.api-key}")
+    private String apikey;
 
+    /**
+     *
+     * if the request is not /events or /actuator then it will not continue
+     * @param request
+     * @return
+     */
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
 
-        return !(
-                "/events".equals(path) ||
+        return !("/events".equals(path) ||
                         path.startsWith("/actuator")
         );
     }
 
+    /**
+     * Validates that the api key is not missing and that it is the one read in properties.
+     * @param req
+     * @param res
+     * @param chain
+     * @throws ServletException
+     * @throws IOException
+     */
     @Override
     protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain)
             throws ServletException, IOException {
 
-        String expected = props.getApiKey();
+        String expected = apikey;
         String provided = req.getHeader(HEADER);
 
         if (expected == null || expected.isBlank()) {
-            // Fail fast: si no configuraste api key, mejor bloquear TODO en prod
             res.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             res.setContentType(MediaType.APPLICATION_JSON_VALUE);
-            res.getWriter().write("{\"error\":\"server misconfigured: api key missing\"}");
+            res.getWriter().write("{\"error\":\"server api key not configured\"}");
             return;
         }
 
@@ -56,7 +67,7 @@ public class ApiKeyAuthFilter extends OncePerRequestFilter {
             return;
         }
 
-        // ✅ Marcamos el request como "autenticado"
+        // once authenticated
         var auth = new UsernamePasswordAuthenticationToken(
                 "tam-api-key",
                 null,

@@ -1,7 +1,7 @@
 package com.theanimalmap.eventtracker.controller;
 
 import com.theanimalmap.eventtracker.config.ApiKeyAuthFilter;
-import com.theanimalmap.eventtracker.service.EventProducer;
+import com.theanimalmap.eventtracker.service.KafkaEventPublisher;
 import com.theanimalmap.eventtracker.validation.EventValidator;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +9,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -17,16 +18,17 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@AutoConfigureMockMvc(addFilters = false) // 🔑 apagamos security acá: este test es de controller
+@ActiveProfiles("test")
+@AutoConfigureMockMvc(addFilters = false)
 @WebMvcTest(EventController.class)
-@Import(ApiExceptionHandler.class) // para que se apliquen los 400 custom
+@Import(ApiExceptionHandler.class)
 class EventControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @MockitoBean
-    private EventProducer producer;
+    private KafkaEventPublisher producer;
 
     @MockitoBean
     private EventValidator validator;
