@@ -1,5 +1,6 @@
 package com.theanimalmap.eventtracker.config;
 
+import com.theanimalmap.eventtracker.filter.ApiKeyAuthFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -25,6 +26,7 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .requestMatchers("/actuator/prometheus").permitAll()
                         .requestMatchers("/actuator/**").authenticated()
                         .requestMatchers(HttpMethod.POST, "/events").authenticated()
                         .anyRequest().denyAll()

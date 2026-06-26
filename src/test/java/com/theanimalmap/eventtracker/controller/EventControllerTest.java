@@ -1,12 +1,16 @@
 package com.theanimalmap.eventtracker.controller;
 
-import com.theanimalmap.eventtracker.config.ApiKeyAuthFilter;
-import com.theanimalmap.eventtracker.service.KafkaEventPublisher;
+import com.theanimalmap.eventtracker.dto.EventRequest;
+import com.theanimalmap.eventtracker.filter.ApiKeyAuthFilter;
+import com.theanimalmap.eventtracker.service.EventPublisher;
 import com.theanimalmap.eventtracker.validation.EventValidator;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
@@ -21,14 +25,21 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("test")
 @AutoConfigureMockMvc(addFilters = false)
 @WebMvcTest(EventController.class)
-@Import(ApiExceptionHandler.class)
+@Import({ApiExceptionHandler.class, EventControllerTest.TestConfig.class})
 class EventControllerTest {
+
+    static class TestConfig {
+        @Bean
+        MeterRegistry meterRegistry() {
+            return new SimpleMeterRegistry();
+        }
+    }
 
     @Autowired
     private MockMvc mockMvc;
 
     @MockitoBean
-    private KafkaEventPublisher producer;
+    private EventPublisher producer;
 
     @MockitoBean
     private EventValidator validator;
@@ -48,7 +59,7 @@ class EventControllerTest {
                 .andExpect(status().isAccepted());
 
         verify(validator).validate(eq("search_animal"), any());
-        verify(producer).publish(eq("tam-events"), anyString());
+        verify(producer).publish(any(EventRequest.class));
         verifyNoMoreInteractions(producer, validator);
     }
 
@@ -69,7 +80,7 @@ class EventControllerTest {
                 .andExpect(jsonPath("$.error").value("unknown type: whatever"));
 
         verify(validator).validate(eq("whatever"), any());
-        verify(producer, never()).publish(anyString(), anyString());
+        verify(producer, never()).publish(any(EventRequest.class));
         verifyNoMoreInteractions(producer, validator);
     }
 
@@ -90,7 +101,7 @@ class EventControllerTest {
                 .andExpect(jsonPath("$.error").value("missing field: animal"));
 
         verify(validator).validate(eq("search_animal"), any());
-        verify(producer, never()).publish(anyString(), anyString());
+        verify(producer, never()).publish(any(EventRequest.class));
         verifyNoMoreInteractions(producer, validator);
     }
 
@@ -125,7 +136,7 @@ class EventControllerTest {
 
         // Puede o no llegar a tu validator dependiendo de cómo validás el DTO.
         // La regla fuerte acá es: NO publicar.
-        verify(producer, never()).publish(anyString(), anyString());
+        verify(producer, never()).publish(any(EventRequest.class));
         verifyNoMoreInteractions(producer);
     }
 }

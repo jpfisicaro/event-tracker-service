@@ -1,4 +1,4 @@
-package com.theanimalmap.eventtracker.config;
+package com.theanimalmap.eventtracker.filter;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -34,7 +34,7 @@ public class ApiKeyAuthFilter extends OncePerRequestFilter {
         String path = request.getRequestURI();
 
         return !("/events".equals(path) ||
-                        path.startsWith("/actuator")
+                (path.startsWith("/actuator") && !"/actuator/prometheus".equals(path))
         );
     }
 
