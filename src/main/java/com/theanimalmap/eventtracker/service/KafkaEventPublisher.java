@@ -3,6 +3,10 @@ package com.theanimalmap.eventtracker.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.theanimalmap.eventtracker.dto.EventRequest;
+import io.micrometer.tracing.Tracer;
+import io.micrometer.tracing.propagation.Propagator;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.header.internals.RecordHeader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,6 +14,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Service;
 
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CompletableFuture;
 
 @Service
@@ -20,14 +25,20 @@ public class KafkaEventPublisher implements EventPublisher {
     private final KafkaTemplate<String, String> kafkaTemplate;
     private final ObjectMapper objectMapper;
     private final String topic;
+    private final Tracer tracer;
+    private final Propagator propagator;
 
     public KafkaEventPublisher(
             KafkaTemplate<String, String> kafkaTemplate,
             ObjectMapper objectMapper,
-            @Value("${tam.kafka.topic}") String topic) {
+            @Value("${tam.kafka.topic}") String topic,
+            Tracer tracer,
+            Propagator propagator) {
         this.kafkaTemplate = kafkaTemplate;
         this.objectMapper = objectMapper;
         this.topic = topic;
+        this.tracer = tracer;
+        this.propagator = propagator;
     }
 
     @Override
@@ -39,8 +50,15 @@ public class KafkaEventPublisher implements EventPublisher {
             throw new IllegalStateException("Failed to serialize event", e);
         }
 
-        CompletableFuture<SendResult<String, String>> future =
-                kafkaTemplate.send(topic, eventJson);
+        ProducerRecord<String, String> record = new ProducerRecord<>(topic, eventJson);
+
+        var context = tracer.currentTraceContext().context();
+        if (context != null) {
+            propagator.inject(context, record.headers(),
+                    (headers, key, value) -> headers.add(new RecordHeader(key, value.getBytes(StandardCharsets.UTF_8))));
+        }
+
+        CompletableFuture<SendResult<String, String>> future = kafkaTemplate.send(record);
 
         future.thenAccept(result ->
                 log.debug(

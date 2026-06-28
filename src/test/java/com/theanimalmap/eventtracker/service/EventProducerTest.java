@@ -2,6 +2,10 @@ package com.theanimalmap.eventtracker.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.theanimalmap.eventtracker.dto.EventRequest;
+import io.micrometer.tracing.CurrentTraceContext;
+import io.micrometer.tracing.Tracer;
+import io.micrometer.tracing.propagation.Propagator;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -20,17 +24,23 @@ class EventProducerTest {
     void publish_shouldSendSerializedEventToKafkaTemplate() throws Exception {
         KafkaTemplate<String, String> kafkaTemplate = Mockito.mock(KafkaTemplate.class);
         ObjectMapper objectMapper = new ObjectMapper();
+        Tracer tracer = mock(Tracer.class);
+        Propagator propagator = mock(Propagator.class);
+        CurrentTraceContext currentTraceContext = mock(CurrentTraceContext.class);
+
+        when(tracer.currentTraceContext()).thenReturn(currentTraceContext);
+        when(currentTraceContext.context()).thenReturn(null);
 
         @SuppressWarnings("unchecked")
         CompletableFuture<SendResult<String, String>> future = CompletableFuture.completedFuture(null);
-        when(kafkaTemplate.send(eq("tam-events"), anyString())).thenReturn(future);
+        when(kafkaTemplate.send(any(ProducerRecord.class))).thenReturn(future);
 
-        KafkaEventPublisher producer = new KafkaEventPublisher(kafkaTemplate, objectMapper, "tam-events");
+        KafkaEventPublisher producer = new KafkaEventPublisher(kafkaTemplate, objectMapper, "tam-events", tracer, propagator);
 
         EventRequest event = new EventRequest("search_animal", objectMapper.readTree("{\"animal\":\"lion\"}"));
         producer.publish(event);
 
-        verify(kafkaTemplate).send(eq("tam-events"), anyString());
+        verify(kafkaTemplate).send(any(ProducerRecord.class));
         verifyNoMoreInteractions(kafkaTemplate);
     }
 }

@@ -3,6 +3,8 @@ server:
   max-http-request-header-size: 16KB
 
 spring:
+  application:
+    name: event-tracker
   kafka:
     bootstrap-servers: localhost:9092
     admin:
@@ -21,6 +23,12 @@ logging:
     com.theanimalmap: DEBUG
 
 management:
+  tracing:
+    sampling:
+      probability: 1.0
+  otlp:
+    tracing:
+      endpoint: http://jaeger:4318/v1/traces
   endpoints:
     web:
       exposure:
