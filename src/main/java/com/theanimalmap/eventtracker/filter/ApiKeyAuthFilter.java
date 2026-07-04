@@ -23,12 +23,6 @@ public class ApiKeyAuthFilter extends OncePerRequestFilter {
     @Value("${tam.security.api-key}")
     private String apikey;
 
-    /**
-     *
-     * if the request is not /events or /actuator then it will not continue
-     * @param request
-     * @return
-     */
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
@@ -38,14 +32,6 @@ public class ApiKeyAuthFilter extends OncePerRequestFilter {
         );
     }
 
-    /**
-     * Validates that the api key is not missing and that it is the one read in properties.
-     * @param req
-     * @param res
-     * @param chain
-     * @throws ServletException
-     * @throws IOException
-     */
     @Override
     protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain)
             throws ServletException, IOException {

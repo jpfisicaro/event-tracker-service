@@ -29,6 +29,11 @@ public class SecurityConfig {
                         .requestMatchers("/actuator/prometheus").permitAll()
                         .requestMatchers("/actuator/**").authenticated()
                         .requestMatchers(HttpMethod.POST, "/events").authenticated()
+                        .requestMatchers(
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html"
+                        ).permitAll()
                         .anyRequest().denyAll()
                 )
                 .addFilterBefore(apiKeyAuthFilter, org.springframework.security.web.access.intercept.AuthorizationFilter.class)
