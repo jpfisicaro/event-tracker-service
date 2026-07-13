@@ -41,14 +41,17 @@ public class EventController {
             @ApiResponse(responseCode = "401", description = "Missing or invalid API key")
     })
     @PostMapping
-    public ResponseEntity<Void> postEvent(@Valid @RequestBody EventRequest req) {
-        validator.validate(req.type(), req.payload());
-        log.debug("Received event type={}, payload={}", req.type(), req.payload());
-        publisher.publish(req);
+    public ResponseEntity<Void> postEvent(@Valid @RequestBody EventRequest request) {
+        validator.validate(request.type(), request.payload());
+        log.debug("Received event type={}, payload={}", request.type(), request.payload());
+        publisher.publish(request);
+
+        // This is for the scraper, to count the events for Grafana
         Counter.builder("tam.events.received")
-                .tag("type", req.type())
+                .tag("type", request.type())
                 .register(meterRegistry)
                 .increment();
+
         return ResponseEntity.accepted().build();
     }
 }
