@@ -1,5 +1,8 @@
 tam:
   security:
     api-key: test-secret
+    rate-limit:
+      capacity: 100
+      refill-period-seconds: 60
   kafka:
     topic: tam-events

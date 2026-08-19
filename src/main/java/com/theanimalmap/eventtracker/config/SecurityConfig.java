@@ -1,6 +1,7 @@
 package com.theanimalmap.eventtracker.config;
 
 import com.theanimalmap.eventtracker.filter.ApiKeyAuthFilter;
+import com.theanimalmap.eventtracker.filter.RateLimitFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -14,7 +15,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 public class SecurityConfig {
 
     @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http, ApiKeyAuthFilter apiKeyAuthFilter) throws Exception {
+    SecurityFilterChain securityFilterChain(HttpSecurity http, ApiKeyAuthFilter apiKeyAuthFilter, RateLimitFilter rateLimitFilter) throws Exception {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
@@ -37,6 +38,7 @@ public class SecurityConfig {
                         .anyRequest().denyAll()
                 )
                 .addFilterBefore(apiKeyAuthFilter, org.springframework.security.web.access.intercept.AuthorizationFilter.class)
+                .addFilterAfter(rateLimitFilter, ApiKeyAuthFilter.class)
                 .build();
     }
 }

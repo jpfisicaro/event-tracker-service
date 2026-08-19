@@ -2,6 +2,12 @@ server:
   port: 8081
   max-http-request-header-size: 16KB
 
+tam:
+  security:
+    rate-limit:
+      capacity: 100
+      refill-period-seconds: 60
+
 spring:
   application:
     name: event-tracker
